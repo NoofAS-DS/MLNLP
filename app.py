@@ -12,9 +12,10 @@ import requests
 from io import BytesIO
 
 # ---------------------------------
-# Model URL (GitHub Releases)
+# URLs from GitHub Releases
 # ---------------------------------
 MODEL_URL = "https://github.com/NoofAS-DS/MLNLP/releases/download/v1.0.0/Random_Forest_level_model.pkl"
+CSV_URL   = "https://github.com/NoofAS-DS/MLNLP/releases/download/v1.0.0/data_jobs.csv"  # ← عدّليها لو اسم التاق/الملف مختلف
 
 # ---------------------------------
 # Page Config
@@ -35,7 +36,12 @@ st.caption(
 # ---------------------------------
 @st.cache_data
 def load_data():
-    raw_df = pd.read_csv("data_jobs.csv")                 # البيانات الأصلية
+    # تحميل data_jobs.csv من GitHub Releases
+    resp = requests.get(CSV_URL)
+    resp.raise_for_status()
+    raw_df = pd.read_csv(BytesIO(resp.content))           # البيانات الأصلية من الرابط
+
+    # هذا يبقى من ملف محلي داخل الريبو
     prep_df = pd.read_csv("smaller_df_prepared.csv")      # بعد الـ Encoding
     return raw_df, prep_df
 
@@ -209,4 +215,5 @@ with st.expander("📚 ملاحظات تعليمية"):
 - مودل **NLP** يعتمد فقط على الوصف النصي
 - **Ensemble** يدمج المودلين لتحسين العدالة بين الفئات
 """)
+
 
