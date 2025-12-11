@@ -8,6 +8,13 @@ import pandas as pd
 import numpy as np
 import joblib
 import plotly.express as px
+import requests
+from io import BytesIO
+
+# ---------------------------------
+# Model URL (GitHub Releases)
+# ---------------------------------
+MODEL_URL = "https://github.com/NoofAS-DS/MLNLP/releases/download/v1.0.0/Random_Forest_level_model.pkl"
 
 # ---------------------------------
 # Page Config
@@ -34,14 +41,21 @@ def load_data():
 
 
 # ---------------------------------
-# Load Models
+# Load Models (RF from Releases + local scaler/tfidf/NLP)
 # ---------------------------------
 @st.cache_resource
 def load_models():
-    rf_model = joblib.load("rf_jobs_level_model.pkl")
+    # 1) Download RF model from GitHub Releases
+    response = requests.get(MODEL_URL)
+    response.raise_for_status()  # لو فيه مشكلة في الرابط أو النت
+
+    rf_model = joblib.load(BytesIO(response.content))
+
+    # 2) Load local artifacts (small files)
     scaler = joblib.load("scaler_jobs_level.pkl")         # ✅ scaler
     tfidf = joblib.load("tfidf_description.pkl")
     nlp_model = joblib.load("nlp_level_model.pkl")
+
     return rf_model, scaler, tfidf, nlp_model
 
 
@@ -195,3 +209,4 @@ with st.expander("📚 ملاحظات تعليمية"):
 - مودل **NLP** يعتمد فقط على الوصف النصي
 - **Ensemble** يدمج المودلين لتحسين العدالة بين الفئات
 """)
+
